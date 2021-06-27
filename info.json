@@ -1,0 +1,13 @@
+{
+	"modUuid": "b1750cb2-dd4c-472c-be44-0ea94267a17b",
+	"modName": "Essentials",
+	"binFile": "MuckEssentials.dll",
+	"entryPoint": "MuckEssentials.MuckEssentials",
+	"modDescription": "Adds no damage, revive all players, full hunger, full stamina, full HP, lets you change your walk and run speeds, lets you override your total number of coins, lets you unlock all crafting recipes and stations, lets you give yourself any item and powerups. Allows you to be able to craft anything, even if you don't have the correct items to craft it.",
+	"modAuthor": "Ash47",
+	"supportedGames": {
+		"muck": true
+	},
+	"releaseDate": "2021/06/12",
+	"github": "https://github.com/AzzaMediaGroup/MuckEssentials"
+}
