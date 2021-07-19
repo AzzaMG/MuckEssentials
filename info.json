@@ -3,11 +3,33 @@
 	"modName": "Essentials",
 	"binFile": "MuckEssentials.dll",
 	"entryPoint": "MuckEssentials.MuckEssentials",
-	"modDescription": "Adds no damage, revive all players, full hunger, full stamina, full HP, lets you change your walk and run speeds, lets you override your total number of coins, lets you unlock all crafting recipes and stations, lets you give yourself any item and powerups. Allows you to be able to craft anything, even if you don't have the correct items to craft it.",
+	"modDescription": "Enhance your Muck experience with these essential mods. Unlock all the items and stations that are available in the game. Prevent damage, give yourself unlimited health, stamina and stop hunger. Instantly revive all players, change your max run and walk speeds to travel across the island faster than ever before. Give yourself infinite coins so you can unlock every chest in the map. Make all crafting options always available to so you can craft anything and everything. Give yourself an infinite number of any item or powerup in the game. Gain infinite jumps and reach new heights or get clear from monsters. Want to win the game? Upgrade your boat for free with this mod.",
 	"modAuthor": "Ash47",
 	"supportedGames": {
 		"muck": true
 	},
 	"releaseDate": "2021/06/12",
-	"github": "https://github.com/AzzaMediaGroup/MuckEssentials"
+	"github": "https://github.com/AzzaMediaGroup/MuckEssentials",
+	"isEssentials": true,
+	"hintOptions": {
+		"Unlock All Items and Stations": "Press this to unlock all items and stations.",
+		"No Damage": "Prevents any players from taking damage.",
+		"Full HP": "Sets your HP to match your full HP.",
+		"Full Stamina": "Gives you unlimited stamina.",
+		"Full Hunger": "Ensure your hunger bar remains full.",
+		"Revive All Players": "Attempts to revive all players on the server.",
+		"Max Run Speed": "The max run speed you can achieve. The default is 13.",
+		"Max Walk Speed": "The max walk speed you can achieve. The default is 6.5.",
+		"Override Total Coins": "Override the total number of coins you have. You need to enable the toggle for this to apply.",
+		"Can Always Craft": "Allows you to craft things even if you don't have enough items to craft it. This will still use items if you do have them.",
+		"Free Boat Upgrades": "This will allow you to repair the boat even if you don't have enough resources.",
+		"Item To Give": "The item to give when giving an item.",
+		"Item Give Count": "The number of a given item to give.",
+		"Give Item": "Give you an item based on the item selected from the dropdown menu.",
+		"Powerup To Give": "The powerup to give when giving a powerup.",
+		"Powerup Give Count": "The number of a given powerup to give.",
+		"Give Powerup": "Give you an powerup based on the powerup selected from the dropdown menu.",
+		"Infinite Jumps": "Give you an endless number of jumps."
+	},
+	"azzaModsLink": "mods/muck/essentials/"
 }

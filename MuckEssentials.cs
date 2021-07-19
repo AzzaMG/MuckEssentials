@@ -47,6 +47,9 @@ namespace MuckEssentials
         private static string optionCanAlwaysCraft = "Can Always Craft";
         private static bool enableAlwaysCraft = false;
 
+        // Free Boat Upgrades
+        private static string optionFreeBoatUpgrades = "Free Boat Upgrades";
+
         // Adding items to inventory
         private static string optionGiveItemWhichItem = "Item To Give";
         private static string optionItemGiveCount = "Item Give Count";
@@ -132,6 +135,13 @@ namespace MuckEssentials
             Options.SetDescription(optionCanAlwaysCraft, "Allows you to craft things even if you don't have enough items to craft it. This will still use items if you do have them.");
             Options.AddPersistence(optionCanAlwaysCraft);
             Patching.Prefix(typeof(InventoryUI).GetMethod("IsCraftable", Patching.AnyMethod), typeof(MuckEssentials).GetMethod("PrefixIsCraftable", Patching.AnyMethod));
+
+            // Free Boat Upgrades
+            Options.RegisterBool(optionFreeBoatUpgrades, false);
+            Options.SetDescription(optionFreeBoatUpgrades, "This will allow you to repair the boat even if you don't have enough resources.");
+            Options.AddPersistence(optionFreeBoatUpgrades);
+            Patching.Prefix(typeof(InventoryUI).GetMethod("CanRepair", Patching.AnyMethod), this.GetType().GetMethod("PrefixCanRepair", Patching.AnyMethod));
+            Patching.Prefix(typeof(InventoryUI).GetMethod("Repair", Patching.AnyMethod), this.GetType().GetMethod("PrefixCanRepair", Patching.AnyMethod));
 
             // Give Items
             Options.RegisterDropdown(optionGiveItemWhichItem, GetPossibleInventoryItems(), "");
@@ -364,9 +374,27 @@ namespace MuckEssentials
                 }
 
                 // Ensure the game over screen isnt showing
-                if(GameManager.instance != null)
+                try
                 {
                     GameManager.instance.gameoverUi.SetActive(false);
+                }
+                catch
+                {
+                    // do nothing
+                }
+
+                // Fix cursor issues
+                Cursor.lockState = CursorLockMode.Locked;
+                Cursor.visible = false;
+
+                // Try to start game
+                try
+                {
+                    GameManager.instance.StartGame();
+                }
+                catch
+                {
+
                 }
             }
 
@@ -548,6 +576,23 @@ namespace MuckEssentials
             {
                 // Set ma jumps to ma
                 __result = int.MaxValue;
+
+                // Don't run original method
+                return false;
+            }
+
+            // Run original method
+            return true;
+        }
+
+        // Boat repair
+        private static bool PrefixCanRepair(ref bool __result)
+        {
+            // Free boat repair enabled?
+            if(Options.GetBool(optionFreeBoatUpgrades))
+            {
+                // Result is true
+                __result = true;
 
                 // Don't run original method
                 return false;
