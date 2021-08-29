@@ -9,6 +9,7 @@
 		"muck": true
 	},
 	"releaseDate": "2021/06/12",
+	"lastUpdate": "2021/8/16",
 	"github": "https://github.com/AzzaMediaGroup/MuckEssentials",
 	"isEssentials": true,
 	"hintOptions": {
@@ -18,6 +19,8 @@
 		"Full Stamina": "Gives you unlimited stamina.",
 		"Full Hunger": "Ensure your hunger bar remains full.",
 		"Revive All Players": "Attempts to revive all players on the server.",
+		"Kill All Mobs": "Press this to kill every mob that is currently on the server. This works best if you're the host.",
+		"Prevent Mob Spawning": "Prevents mobs from spawning. Won't kill current mobs. Only works on the server.",
 		"Max Run Speed": "The max run speed you can achieve. The default is 13.",
 		"Max Walk Speed": "The max walk speed you can achieve. The default is 6.5.",
 		"Override Total Coins": "Override the total number of coins you have. You need to enable the toggle for this to apply.",
@@ -29,7 +32,8 @@
 		"Powerup To Give": "The powerup to give when giving a powerup.",
 		"Powerup Give Count": "The number of a given powerup to give.",
 		"Give Powerup": "Give you an powerup based on the powerup selected from the dropdown menu.",
-		"Infinite Jumps": "Give you an endless number of jumps."
+		"Infinite Jumps": "Give you an endless number of jumps.",
+		"Skip Tutorial": "Will prevent the tutorial from coming up, or close the tutorial if it has already started."
 	},
 	"azzaModsLink": "mods/muck/essentials/"
 }

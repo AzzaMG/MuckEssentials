@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using AzzaMods;
+using HarmonyLib;
 using UnityEngine;
 
 namespace MuckEssentials
@@ -67,6 +68,14 @@ namespace MuckEssentials
         private static int minGiveCount = 1;
         private static int maxGiveCount = 1024;
 
+        // Skip tutorial
+        private static string optionSkipTutorial = "Skip Tutorial";
+
+        // Kill all mobs
+        private static string optionKillAllMobs = "Kill All Mobs";
+        private static string optionPreventMobSpawn = "Prevent Mob Spawning";
+        private static bool preventMobSpawning = false;
+
         void OnModLoaded()
         {
             // Unlock items
@@ -78,6 +87,18 @@ namespace MuckEssentials
             Options.RegisterAction(actionReviveAllPlayers);
             Options.SetDescription(actionReviveAllPlayers, "Attempts to revive all players on the server.");
             Options.AddPersistence(actionReviveAllPlayers);
+
+            // Kill All Mobs
+            Options.RegisterAction(optionKillAllMobs);
+            Options.SetDescription(optionKillAllMobs, "Press this to kill every mob that is currently on the server. This works best if you're the host.");
+            Options.AddPersistence(optionKillAllMobs);
+
+            // Prevent mob spawning
+            Options.RegisterBool(optionPreventMobSpawn, preventMobSpawning);
+            Options.SetDescription(optionPreventMobSpawn, "Prevents mobs from spawning. Won't kill current mobs.");
+            Options.AddPersistence(optionPreventMobSpawn);
+            Patching.Prefix(typeof(MobSpawner).GetMethod("ServerSpawnNewMob", Patching.AnyMethod), this.GetType().GetMethod("PrefixBlockMobSpawning", Patching.AnyMethod));
+            Patching.Prefix(typeof(MobSpawner).GetMethod("SpawnMob", Patching.AnyMethod), this.GetType().GetMethod("PrefixBlockMobSpawning", Patching.AnyMethod));
 
             // No Damage
             Options.RegisterBool(optionNoDamage, false);
@@ -108,11 +129,13 @@ namespace MuckEssentials
             // Max Run Speed
             Options.RegisterFloat(optionMaxRunSpeed, maxRunSpeed);
             Options.SetDescription(optionMaxRunSpeed, "The max run speed you can achieve. The default is 13.");
+            Options.AddToggle(optionMaxRunSpeed);
             Options.AddPersistence(optionMaxRunSpeed);
 
             // Max Walk Speed
             Options.RegisterFloat(optionMaxWalkSpeed, maxWalkSpeed);
             Options.SetDescription(optionMaxWalkSpeed, "The max walk speed you can achieve. The default is 6.5.");
+            Options.AddToggle(optionMaxWalkSpeed);
             Options.AddPersistence(optionMaxWalkSpeed);
 
             // Infinite Jumps
@@ -168,6 +191,11 @@ namespace MuckEssentials
             Options.RegisterAction(actionGivePowerUp);
             Options.SetDescription(actionGivePowerUp, "Give you an powerup based on the powerup selected from the dropdown menu.");
             Options.AddPersistence(actionGivePowerUp);
+
+            // Skip Tutorial
+            Options.RegisterBool(optionSkipTutorial, false);
+            Options.SetDescription(optionSkipTutorial, "Will prevent the tutorial from coming up, or close the tutorial if it has already started.");
+            Options.AddPersistence(optionSkipTutorial);
 
             // Start management of movement speed
             StartCoroutine(SlowUpdate());
@@ -239,6 +267,39 @@ namespace MuckEssentials
             {
                 enabledInfiniteJumps = Options.GetBool(optionName);
             }
+
+            // Skip tutorial
+            if(optionName == optionSkipTutorial)
+            {
+                // Is it enabled?
+                if(Options.GetBool(optionName))
+                {
+                    // Kill any gameobjects related to it
+                    foreach(Tutorial tutorial in FindObjectsOfType<Tutorial>())
+                    {
+                        try
+                        {
+                            Traverse traverse = new Traverse(tutorial);
+                            traverse.Field<TutorialTaskUI>("currentTaskUi").Value.StartFade();
+                        }
+                        catch
+                        {
+                            // do nothing
+                        }
+
+                        Destroy(tutorial.gameObject);
+                    }
+
+                    // Disble it
+                    CurrentSettings.Instance.tutorial = false;
+                }
+            }
+
+            // Prevent mobs from spawning
+            if(optionName == optionPreventMobSpawn)
+            {
+                preventMobSpawning = Options.GetBool(optionName);
+            }
         }
 
         void OnSceneChanged(string oldScene, string newScene)
@@ -268,8 +329,15 @@ namespace MuckEssentials
 
             foreach (PlayerMovement plyMovement in FindObjectsOfType<PlayerMovement>())
             {
-                fieldMaxRunSpeed.SetValue(plyMovement, maxRunSpeed);
-                fieldMaxWalkSpeed.SetValue(plyMovement, maxWalkSpeed);
+                if(Options.GetToggleState(optionMaxRunSpeed))
+                {
+                    fieldMaxRunSpeed.SetValue(plyMovement, maxRunSpeed);
+                }
+
+                if (Options.GetToggleState(optionMaxWalkSpeed))
+                {
+                    fieldMaxWalkSpeed.SetValue(plyMovement, maxWalkSpeed);
+                }
             }
         }
 
@@ -289,6 +357,8 @@ namespace MuckEssentials
                 // do nothing
             }
 
+            possibleItems.Sort();
+
             return possibleItems;
         }
 
@@ -307,6 +377,8 @@ namespace MuckEssentials
             {
                 // do nothing
             }
+
+            possiblePowerUps.Sort();
 
             return possiblePowerUps;
         }
@@ -359,7 +431,6 @@ namespace MuckEssentials
                             // Buff to at least 100 hp
                             if (ply.currentHp < 100)
                             {
-                                Log.Info("e");
                                 ply.currentHp = 100;
                             }
 
@@ -492,6 +563,34 @@ namespace MuckEssentials
                     }
                 }
             }
+
+            // Kill All Mobs
+            if(actionName == optionKillAllMobs)
+            {
+                foreach (MobServer monster in FindObjectsOfType<MobServer>())
+                {
+                    try
+                    {
+                        Destroy(monster.gameObject);
+                    }
+                    catch
+                    {
+                        // do nothing
+                    }
+                }
+
+                foreach (Mob monster in FindObjectsOfType<Mob>())
+                {
+                    try
+                    {
+                        Destroy(monster.gameObject);
+                    }
+                    catch
+                    {
+                        // do nothing
+                    }
+                }
+            }
         }
 
         // No Damage
@@ -595,6 +694,20 @@ namespace MuckEssentials
                 __result = true;
 
                 // Don't run original method
+                return false;
+            }
+
+            // Run original method
+            return true;
+        }
+
+        // Prevent mob spawning
+        private static bool PrefixBlockMobSpawning()
+        {
+            // Is mob spawning disbled?
+            if(preventMobSpawning)
+            {
+                // Don't run the mob spawn code
                 return false;
             }
 
