@@ -74,28 +74,27 @@ namespace MuckEssentials
         // Kill all mobs
         private static string optionKillAllMobs = "Kill All Mobs";
         private static string optionPreventMobSpawn = "Prevent Mob Spawning";
-        private static bool preventMobSpawning = false;
 
         void OnModLoaded()
         {
             // Unlock items
-            Options.RegisterAction(actionUnlockAllItemsAndStations);
+            Options.RegisterAction(actionUnlockAllItemsAndStations, "Unlock All Items and Stations");
             Options.SetDescription(actionUnlockAllItemsAndStations, "Press this to unlock all items and stations.");
             Options.AddPersistence(actionUnlockAllItemsAndStations);
 
             // Revive Button
-            Options.RegisterAction(actionReviveAllPlayers);
+            Options.RegisterAction(actionReviveAllPlayers, "Revive All Players");
             Options.SetDescription(actionReviveAllPlayers, "Attempts to revive all players on the server.");
             Options.AddPersistence(actionReviveAllPlayers);
 
             // Kill All Mobs
-            Options.RegisterAction(optionKillAllMobs);
+            Options.RegisterAction(optionKillAllMobs, "Kill All Mobs");
             Options.SetDescription(optionKillAllMobs, "Press this to kill every mob that is currently on the server. This works best if you're the host.");
             Options.AddPersistence(optionKillAllMobs);
 
             // Prevent mob spawning
-            Options.RegisterBool(optionPreventMobSpawn, preventMobSpawning);
-            Options.SetDescription(optionPreventMobSpawn, "Prevents mobs from spawning. Won't kill current mobs.");
+            Options.RegisterBool(optionPreventMobSpawn, false);
+            Options.SetDescription(optionPreventMobSpawn, "Prevents hostile mobs/monsters from spawning. This won't kill mobs that have already spawned.");
             Options.AddPersistence(optionPreventMobSpawn);
             Patching.Prefix(typeof(MobSpawner).GetMethod("ServerSpawnNewMob", Patching.AnyMethod), this.GetType().GetMethod("PrefixBlockMobSpawning", Patching.AnyMethod));
             Patching.Prefix(typeof(MobSpawner).GetMethod("SpawnMob", Patching.AnyMethod), this.GetType().GetMethod("PrefixBlockMobSpawning", Patching.AnyMethod));
@@ -175,7 +174,7 @@ namespace MuckEssentials
             Options.SetMinValue(optionItemGiveCount, minGiveCount);
             Options.SetMaxValue(optionItemGiveCount, maxGiveCount);
             Options.AddPersistence(optionItemGiveCount);
-            Options.RegisterAction(actionGiveItem);
+            Options.RegisterAction(actionGiveItem, "Give Item");
             Options.SetDescription(actionGiveItem, "Give you an item based on the item selected from the dropdown menu.");
             Options.AddPersistence(actionGiveItem);
 
@@ -188,7 +187,7 @@ namespace MuckEssentials
             Options.SetMinValue(optionPowerUpGiveGiveCount, minGiveCount);
             Options.SetMaxValue(optionPowerUpGiveGiveCount, maxGiveCount);
             Options.AddPersistence(optionPowerUpGiveGiveCount);
-            Options.RegisterAction(actionGivePowerUp);
+            Options.RegisterAction(actionGivePowerUp, "Give Powerup");
             Options.SetDescription(actionGivePowerUp, "Give you an powerup based on the powerup selected from the dropdown menu.");
             Options.AddPersistence(actionGivePowerUp);
 
@@ -293,12 +292,6 @@ namespace MuckEssentials
                     // Disble it
                     CurrentSettings.Instance.tutorial = false;
                 }
-            }
-
-            // Prevent mobs from spawning
-            if(optionName == optionPreventMobSpawn)
-            {
-                preventMobSpawning = Options.GetBool(optionName);
             }
         }
 
@@ -705,7 +698,7 @@ namespace MuckEssentials
         private static bool PrefixBlockMobSpawning()
         {
             // Is mob spawning disbled?
-            if(preventMobSpawning)
+            if(Options.GetBool(optionPreventMobSpawn))
             {
                 // Don't run the mob spawn code
                 return false;
