@@ -33,6 +33,10 @@ namespace MuckEssentials
         // Revive all players
         private static string actionReviveAllPlayers = "Revive All Players";
 
+        // Revive specific player
+        private static string optionPlayerToRevive = "Player To Revive";
+        private static string actionReviveSpecificPlayer = "Revive Specific Player";
+
         // Movement Speed
         private static string optionMaxRunSpeed = "Max Run Speed";
         private static float maxRunSpeed = 13f;
@@ -86,6 +90,16 @@ namespace MuckEssentials
             Options.RegisterAction(actionReviveAllPlayers, "Revive All Players");
             Options.SetDescription(actionReviveAllPlayers, "Attempts to revive all players on the server.");
             Options.AddPersistence(actionReviveAllPlayers);
+
+            // Revive player list
+            Options.RegisterDropdown(optionPlayerToRevive);
+            Options.SetDescription(optionPlayerToRevive, "Select a player to revive.");
+            Options.AddPersistence(optionPlayerToRevive);
+
+            // Revive specific player
+            Options.RegisterAction(actionReviveSpecificPlayer, "Revive Specific Player");
+            Options.SetDescription(actionReviveSpecificPlayer, "Revive the specified player.");
+            Options.AddPersistence(actionReviveSpecificPlayer);
 
             // Kill All Mobs
             Options.RegisterAction(optionKillAllMobs, "Kill All Mobs");
@@ -197,7 +211,7 @@ namespace MuckEssentials
             Options.AddPersistence(optionSkipTutorial);
 
             // Start management of movement speed
-            StartCoroutine(SlowUpdate());
+            StartCoroutine(this.SlowUpdate());
         }
 
         void OnModUnloaded()
@@ -302,16 +316,45 @@ namespace MuckEssentials
             Options.SetDropdownOptions(optionGivePowerUpWhichPowerUp, GetPossiblePowerUps());
         }
 
+        private List<string> GetPlayerNames()
+        {
+            List<string> players = new List<string>();
+
+            try
+            {
+                foreach(KeyValuePair<int, PlayerManager> pair in GameManager.players)
+                {
+                    players.Add(pair.Value.username);
+                }
+            }
+            catch
+            {
+                // do nothing
+            }
+
+            return players;
+        }
+
+        private List<string> cachedPlayers = new List<string>();
+
         // Run once every second or so
         private IEnumerator SlowUpdate()
         {
             while(true)
             {
+                // Wait a second
+                yield return new WaitForSeconds(1f);
+
                 // Apply it
                 ApplyMaxRunAndWalkSpeeds();
 
-                // Wait a second
-                yield return new WaitForSeconds(1f);
+                // Update player list
+                List<string> newPlayerList = GetPlayerNames();
+                if(cachedPlayers.Count != newPlayerList.Count)
+                {
+                    cachedPlayers = newPlayerList;
+                    Options.SetDropdownOptions(optionPlayerToRevive, newPlayerList);
+                }
             }
         }
 
@@ -582,6 +625,51 @@ namespace MuckEssentials
                     {
                         // do nothing
                     }
+                }
+            }
+
+            // Revive specific player
+            if(actionName == actionReviveSpecificPlayer)
+            {
+                string nameToMatch = Options.GetString(optionPlayerToRevive);
+
+                try
+                {
+                    foreach (KeyValuePair<int, PlayerManager> pair in GameManager.players)
+                    {
+                        if(pair.Value.username == nameToMatch)
+                        {
+                            ClientSend.RevivePlayer(pair.Value.id, -1, true);
+                        }
+                    }
+                }
+                catch
+                {
+                    // do nothing
+                }
+
+                // Ensure the game over screen isnt showing
+                try
+                {
+                    GameManager.instance.gameoverUi.SetActive(false);
+                }
+                catch
+                {
+                    // do nothing
+                }
+
+                // Fix cursor issues
+                Cursor.lockState = CursorLockMode.Locked;
+                Cursor.visible = false;
+
+                // Try to start game
+                try
+                {
+                    GameManager.instance.StartGame();
+                }
+                catch
+                {
+
                 }
             }
         }
