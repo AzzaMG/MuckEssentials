@@ -112,6 +112,7 @@ namespace MuckEssentials
             Options.AddPersistence(optionPreventMobSpawn);
             Patching.Prefix(typeof(MobSpawner).GetMethod("ServerSpawnNewMob", Patching.AnyMethod), this.GetType().GetMethod("PrefixBlockMobSpawning", Patching.AnyMethod));
             Patching.Prefix(typeof(MobSpawner).GetMethod("SpawnMob", Patching.AnyMethod), this.GetType().GetMethod("PrefixBlockMobSpawning", Patching.AnyMethod));
+            Patching.Prefix(typeof(MobZone).GetMethod("LocalSpawnEntity", Patching.AnyMethod), this.GetType().GetMethod("PrefixBlockMobSpawning", Patching.AnyMethod));
 
             // No Damage
             Options.RegisterBool(optionNoDamage, false);
